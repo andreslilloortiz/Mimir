@@ -112,7 +112,6 @@ def main():
         llm=llm,
         allowed_nodes=ALLOWED_NODES,
         allowed_relationships=ALLOWED_RELS,
-        node_properties=["id"] # Keeping properties simple for speed
         )
 
     # 6. EXECUTE GRAPH EXTRACTION (ETL Process)
