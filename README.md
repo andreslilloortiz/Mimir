@@ -3,10 +3,13 @@ docker compose up -d
 docker compose -f docker-compose.yml -f docker-compose.nvidia.yml up -d # nvidia gpu
 docker logs -f mimir-init # logs from llama3.2 download
 
+# ingest
+python3 ingest.py docs/document.pdf --clear
+
 # python venv
 python3 -m venv mimir-venv
 source mimir-venv/bin/activate
-pip install langchain langchain-community langchain-experimental neo4j ollama pypdf tiktoken
+pip install langchain langchain-community langchain-experimental langchain_ollama langchain_neo4j neo4j ollama pypdf tiktoken
 
 # nvidia gpu
 curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
