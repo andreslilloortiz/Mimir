@@ -1,5 +1,6 @@
 # docker compose
 docker compose up -d
+docker compose -f docker-compose.yml -f docker-compose.nvidia.yml up -d # nvidia gpu
 docker logs -f mimir-init # logs from llama3.2 download
 
 # python venv

@@ -30,13 +30,6 @@ services:
       - ./data/ollama:/root/.ollama
     networks:
       - mimir-net
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [ gpu ]
 
   # Download llama3
   ollama-init:
