@@ -6,6 +6,9 @@ docker logs -f mimir-init # logs from llama3.2 download
 # ingest
 python3 ingest.py docs/document.pdf --clear
 
+# chat
+python3 chat.py --verbose
+
 # python venv
 python3 -m venv mimir-venv
 source mimir-venv/bin/activate
