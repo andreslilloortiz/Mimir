@@ -15,6 +15,32 @@ NEO4J_PASSWORD = "password123"
 # Model configuration
 MODEL_NAME = "llama3.2"
 
+# --- BIG DATA & ENGINEERING ONTOLOGY ---
+# We enforce a strict schema so Mimir understands the difference between
+# a theoretical concept (CAP Theorem) and a concrete tool (Docker).
+ALLOWED_NODES = [
+    "Document",     # The PDF file itself
+    "Concept",      # Theoretical concepts (e.g., CAP Theorem, ACID, Cross-compilation)
+    "Technology",   # General tools/languages (e.g., Python, Docker, GCC, QEMU)
+    "Database",     # Specific storage systems (e.g., Neo4j, HDFS, Cassandra, MongoDB)
+    "Architecture", # System designs (e.g., Master-Slave, Peer-to-Peer, Lambda Arch)
+    "Algorithm",    # Logic/Processes (e.g., MapReduce, PageRank, Ridge Regression)
+    "Metric",       # Evaluation metrics (e.g., Precision, Recall, Latency, Throughput)
+    "Person",       # Authors, Researchers (e.g., Andrés Lillo, Dean & Ghemawat)
+    "Organization"  # Universities, Companies (e.g., USC, Televes, Google)
+]
+
+ALLOWED_RELS = [
+    "AUTHOR_OF",    # Person -> Document
+    "MENTIONS",     # Document -> Concept/Tech/Database...
+    "DEFINES",      # Document -> Concept (Stronger than mentions)
+    "USES",         # Technology -> Technology (e.g., 'Pookie uses Docker')
+    "IMPLEMENTS",   # Database -> Architecture (e.g., 'HDFS implements Master-Slave')
+    "EVALUATES",    # Metric -> Algorithm (e.g., 'F1-Score evaluates Classifier')
+    "RELATED_TO",   # Concept -> Concept
+    "TYPE_OF"       # MongoDB -> Database
+]
+
 def parse_arguments():
     """
     Parses command line arguments.
@@ -49,6 +75,7 @@ def main():
     print(f"🚀 Starting Mimir Ingestion Pipeline...")
     print(f"   -> Target File: {pdf_path}")
     print(f"   -> Model: {MODEL_NAME}")
+    print(f"   -> Schema: {len(ALLOWED_NODES)} node types defined.")
 
     # 2. CONNECT TO NEO4J DATABASE
     try:
@@ -81,7 +108,12 @@ def main():
 
     # 5. INITIALIZE GRAPH TRANSFORMER
     # This is the 'Magic' component that converts raw text into Nodes and Relationships
-    llm_transformer = LLMGraphTransformer(llm=llm)
+    llm_transformer = LLMGraphTransformer(
+        llm=llm,
+        allowed_nodes=ALLOWED_NODES,
+        allowed_relationships=ALLOWED_RELS,
+        node_properties=["id"] # Keeping properties simple for speed
+        )
 
     # 6. EXECUTE GRAPH EXTRACTION (ETL Process)
     print("🧠 Extracting Entities and Relationships (GraphRAG)...")

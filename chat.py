@@ -10,19 +10,39 @@ NEO4J_USERNAME = "neo4j"
 NEO4J_PASSWORD = "password123"
 MODEL_NAME = "llama3.2"
 
-CYPHER_GENERATION_TEMPLATE = """Task:Generate Cypher statement to question a graph database.
+# --- CYPHER GENERATION TEMPLATE (ENGINEERING & BIG DATA FOCUSED) ---
+CYPHER_GENERATION_TEMPLATE = """Task: Generate Cypher statement to question a graph database.
 Instructions:
 Use only the provided relationship types and properties in the schema.
 Do not use any other relationship types or properties that are not provided.
+
 Schema:
 {schema}
 
-CRITICAL NOTES:
-1. In this database, usually the name of the entity is stored in the property 'id', NOT 'name'.
-   Example: Instead of 'MATCH (n {{name: "Andrés"}})', USE 'MATCH (n {{id: "Andrés"}})'.
-2. Do not use the property 'type' for filtering. Use Node Labels instead.
-3. Case sensitivity matters.
-4. If you search for an author, look for nodes labeled 'Person' or 'Author'.
+CRITICAL RULES:
+1. **Properties:** ALWAYS use 'id' to filter by name (e.g., MATCH (n {{id: "Hadoop"}})). NEVER use 'name'.
+2. **Labels:** Use the specific labels defined in our ontology:
+   - 'Technology' for tools like Docker, Python, Git.
+   - 'Database' for systems like Neo4j, HDFS, MongoDB, SQL.
+   - 'Algorithm' for logic like MapReduce, Regression, KNN.
+   - 'Concept' for theories like CAP Theorem, Consistency, ACID.
+   - 'Architecture' for patterns like Master-Slave, Peer-to-Peer.
+   - 'Document' for the source files.
+3. **Fuzzy Matching:** Use `toLower(n.id) CONTAINS "term"` for flexible search.
+
+FEW-SHOT EXAMPLES:
+
+Question: "What algorithms are mentioned in the TFG?"
+Cypher: MATCH (d:Document)-[:MENTIONS]->(a:Algorithm) WHERE toLower(d.id) CONTAINS "tfg" RETURN a.id
+
+Question: "How does HDFS work?"
+Cypher: MATCH (t:Database {{id: "HDFS"}})-[r]-(n) RETURN t, r, n LIMIT 15
+
+Question: "Who is the author of the document?"
+Cypher: MATCH (p:Person)-[:AUTHOR_OF]->(d:Document) RETURN p.id, d.id
+
+Question: "What architecture does HDFS use?"
+Cypher: MATCH (db:Database {{id: "HDFS"}})-[:IMPLEMENTS|:USES]->(a:Architecture) RETURN a.id
 
 The question is:
 {question}"""
