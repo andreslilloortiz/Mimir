@@ -1,6 +1,7 @@
 import argparse
 from langchain_ollama import ChatOllama
 from langchain_neo4j import Neo4jGraph, GraphCypherQAChain
+from langchain_core.prompts import PromptTemplate
 
 # --- CONFIGURATION ---
 # Connection details for the Dockerized Neo4j instance
@@ -9,6 +10,27 @@ NEO4J_USERNAME = "neo4j"
 NEO4J_PASSWORD = "password123"
 MODEL_NAME = "llama3.2"
 
+CYPHER_GENERATION_TEMPLATE = """Task:Generate Cypher statement to question a graph database.
+Instructions:
+Use only the provided relationship types and properties in the schema.
+Do not use any other relationship types or properties that are not provided.
+Schema:
+{schema}
+
+CRITICAL NOTES:
+1. In this database, usually the name of the entity is stored in the property 'id', NOT 'name'.
+   Example: Instead of 'MATCH (n {{name: "Andrés"}})', USE 'MATCH (n {{id: "Andrés"}})'.
+2. Do not use the property 'type' for filtering. Use Node Labels instead.
+3. Case sensitivity matters.
+4. If you search for an author, look for nodes labeled 'Person' or 'Author'.
+
+The question is:
+{question}"""
+
+CYPHER_PROMPT = PromptTemplate(
+    input_variables=["schema", "question"],
+    template=CYPHER_GENERATION_TEMPLATE
+)
 def main():
     # 1. SETUP ARGUMENTS
     parser = argparse.ArgumentParser(description="Mimir Chat: Ask questions to your Knowledge Graph.")
@@ -26,6 +48,10 @@ def main():
         )
         # Refresh schema creates a map of your nodes/rels so the LLM knows what exists
         graph.refresh_schema()
+        # IMPRIMIR EL ESQUEMA PARA QUE TÚ LO VEAS EN CONSOLA
+        # print("\n--- SCHEMA DETECTED ---")
+        # print(graph.schema)
+        # print("-----------------------\n")
     except Exception as e:
         print(f"❌ Connection Failed: {e}")
         return
@@ -36,12 +62,17 @@ def main():
     # 4. CREATE THE CHAIN (The "Magic" Link)
     # GraphCypherQAChain does the following:
     # Question -> LLM translates to Cypher -> Neo4j executes -> Result -> LLM translates to Answer
-    chain = GraphCypherQAChain.from_llm(
-        llm=llm,
-        graph=graph,
-        verbose=args.verbose, # If True, it prints the thinking process
-        allow_dangerous_requests=True # Necessary for executing generated queries
-    )
+    try:
+        chain = GraphCypherQAChain.from_llm(
+            llm=llm,
+            graph=graph,
+            verbose=args.verbose, # If True, it prints the thinking process
+            allow_dangerous_requests=True, # Necessary for executing generated queries
+            cypher_prompt=CYPHER_PROMPT
+        )
+    except Exception as e:
+        print(f"❌ Error creating chain: {e}")
+        return
 
     print("✅ Mimir is ready! (Type 'exit' or 'quit' to stop)")
     print("--------------------------------------------------")
