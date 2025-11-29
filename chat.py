@@ -8,9 +8,11 @@ from langchain_core.prompts import PromptTemplate
 NEO4J_URI = "bolt://localhost:7687"
 NEO4J_USERNAME = "neo4j"
 NEO4J_PASSWORD = "password123"
+
+# Model configuration
 MODEL_NAME = "llama3.2"
 
-# --- CYPHER GENERATION TEMPLATE (ENGINEERING & BIG DATA FOCUSED) ---
+# --- CYPHER GENERATION TEMPLATE ---
 CYPHER_GENERATION_TEMPLATE = """Task: Generate Cypher statement to question a graph database.
 Instructions:
 Use only the provided relationship types and properties in the schema.
@@ -20,29 +22,13 @@ Schema:
 {schema}
 
 CRITICAL RULES:
-1. **Properties:** ALWAYS use 'id' to filter by name (e.g., MATCH (n {{id: "Hadoop"}})). NEVER use 'name'.
-2. **Labels:** Use the specific labels defined in our ontology:
-   - 'Technology' for tools like Docker, Python, Git.
-   - 'Database' for systems like Neo4j, HDFS, MongoDB, SQL.
-   - 'Algorithm' for logic like MapReduce, Regression, KNN.
-   - 'Concept' for theories like CAP Theorem, Consistency, ACID.
-   - 'Architecture' for patterns like Master-Slave, Peer-to-Peer.
-   - 'Document' for the source files.
-3. **Fuzzy Matching:** Use `toLower(n.id) CONTAINS "term"` for flexible search.
+1. **Properties:** - The identifier property is **'name'**. NEVER use 'id'.
+   - There is also a **'description'** property. Use it if the user asks for definitions or explanations.
+   - Correct: MATCH (n {{name: "Docker"}}) RETURN n.description
+   - Incorrect: MATCH (n {{id: "Docker"}})
 
-FEW-SHOT EXAMPLES:
-
-Question: "What algorithms are mentioned in the TFG?"
-Cypher: MATCH (d:Document)-[:MENTIONS]->(a:Algorithm) WHERE toLower(d.id) CONTAINS "tfg" RETURN a.id
-
-Question: "How does HDFS work?"
-Cypher: MATCH (t:Database {{id: "HDFS"}})-[r]-(n) RETURN t, r, n LIMIT 15
-
-Question: "Who is the author of the document?"
-Cypher: MATCH (p:Person)-[:AUTHOR_OF]->(d:Document) RETURN p.id, d.id
-
-Question: "What architecture does HDFS use?"
-Cypher: MATCH (db:Database {{id: "HDFS"}})-[:IMPLEMENTS|:USES]->(a:Architecture) RETURN a.id
+2. **Fuzzy Matching (Recommended):**
+   - Since names might vary, use `toLower(n.name) CONTAINS "term"` for robust search.
 
 The question is:
 {question}"""
@@ -51,6 +37,7 @@ CYPHER_PROMPT = PromptTemplate(
     input_variables=["schema", "question"],
     template=CYPHER_GENERATION_TEMPLATE
 )
+
 def main():
     # 1. SETUP ARGUMENTS
     parser = argparse.ArgumentParser(description="Mimir Chat: Ask questions to your Knowledge Graph.")
