@@ -52,6 +52,31 @@ CYPHER_PROMPT = PromptTemplate(
     template=CYPHER_GENERATION_TEMPLATE
 )
 
+# --- QA TEMPLATE ---
+QA_TEMPLATE = """You are Mimir, an expert assistant.
+You have retrieved the following context from a Knowledge Graph to answer the user's question.
+
+Context (Graph Data):
+{context}
+
+User Question:
+{question}
+
+INSTRUCTIONS FOR THE ANSWER:
+1. **Analyze the Context:** Look at the relationships (e.g., USED_FOR, IMPLEMENTED_IN, AUTHOR_OF).
+2. **Synthesize:** Don't just list facts. Combine them into coherent sentences.
+3. **Be Comprehensive:** Use ALL the information provided in the context.
+   - If the context says it is implemented in C++, say it.
+   - If it says it is used for Google News, say it.
+4. **Style:** Professional, technical, and detailed.
+
+Answer:"""
+
+QA_PROMPT = PromptTemplate(
+    input_variables=["context", "question"],
+    template=QA_TEMPLATE
+)
+
 def main():
     # 1. SETUP ARGUMENTS
     parser = argparse.ArgumentParser(description="Mimir Chat: Ask questions to your Knowledge Graph.")
@@ -89,7 +114,8 @@ def main():
             graph=graph,
             verbose=args.verbose, # If True, it prints the thinking process
             allow_dangerous_requests=True, # Necessary for executing generated queries
-            cypher_prompt=CYPHER_PROMPT
+            cypher_prompt=CYPHER_PROMPT,
+            qa_prompt=QA_PROMPT
         )
     except Exception as e:
         print(f"❌ Error creating chain: {e}")
