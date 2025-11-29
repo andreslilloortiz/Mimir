@@ -21,28 +21,28 @@ Do not use any other relationship types or properties that are not provided.
 Schema:
 {schema}
 
-CRITICAL RULES:
-1. **Identifier:** The only property to search is **'id'**. NEVER use 'name' or 'title'.
-2. **Fuzzy Search Strategy (CRITICAL):** - Users might misspell words or add spaces (e.g., "Map Reduce" vs "Mapreduce").
-   - ALWAYS use `toLower()` for case insensitivity.
-   - ALWAYS use `CONTAINS` instead of exact match (`=`).
-   - **Try multiple variations using `OR`**:
-     - Example: If searching for "Map Reduce", check:
-       `toLower(n.id) CONTAINS "map reduce" OR toLower(n.id) CONTAINS "mapreduce"`
+CRITICAL STRATEGY (THE "CONTEXT" RULE):
+1. **Search Logic:** When the user asks about a specific Topic, Technology, or Person, DO NOT just look for the node. **ALWAYS** retrieve the node AND all its immediate relationships.
+   - This provides the context needed to answer "What is...", "Who created...", "How is it used...".
 
-FEW-SHOT EXAMPLES (Learn from these patterns):
+2. **Fuzzy Matching:** Always use `toLower(n.id) CONTAINS "term"` to handle spelling variations.
 
-Question: "What is Map Reduce?"
-Cypher: MATCH (c:Concept) WHERE toLower(c.id) CONTAINS "mapreduce" OR toLower(c.id) CONTAINS "map reduce" RETURN c.id
+3. **The Universal Pattern:**
+   - `MATCH (n)-[r]-(m) WHERE toLower(n.id) CONTAINS "your search term" RETURN n, r, m`
 
-Question: "Who are the authors?"
-Cypher: MATCH (p:Person)-[:AUTHOR_OF]->(d:Document) RETURN p.id
+EXAMPLES:
 
-Question: "What databases are mentioned?"
-Cypher: MATCH (d:Database) RETURN d.id LIMIT 10
+Question: "Tell me about Map Reduce"
+Cypher: MATCH (n)-[r]-(m) WHERE toLower(n.id) CONTAINS "mapreduce" OR toLower(n.id) CONTAINS "map reduce" RETURN n, r, m
 
-Question: "How does HDFS work?"
-Cypher: MATCH (t:Technology)-[r]-(n) WHERE toLower(t.id) CONTAINS "hdfs" RETURN t, r, n LIMIT 10
+Question: "Who is Jeffrey Dean?"
+Cypher: MATCH (n:Person)-[r]-(m) WHERE toLower(n.id) CONTAINS "jeffrey" RETURN n, r, m
+
+Question: "What is HDFS used for?"
+Cypher: MATCH (n)-[r]-(m) WHERE toLower(n.id) CONTAINS "hdfs" RETURN n, r, m
+
+Question: "Details about the Mapreduce Library"
+Cypher: MATCH (n)-[r]-(m) WHERE toLower(n.id) CONTAINS "mapreduce library" RETURN n, r, m
 
 The question is:
 {question}"""
