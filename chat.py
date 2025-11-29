@@ -22,14 +22,27 @@ Schema:
 {schema}
 
 CRITICAL RULES:
-1. **Properties:** - The identifier property is **'id'**. NEVER use 'name'.
-   - The 'id' property contains the text/name of the entity.
-   - Correct: MATCH (n {{id: "Docker"}}) RETURN n.id
-   - Incorrect: MATCH (n {{name: "Docker"}})
+1. **Identifier:** The only property to search is **'id'**. NEVER use 'name' or 'title'.
+2. **Fuzzy Search Strategy (CRITICAL):** - Users might misspell words or add spaces (e.g., "Map Reduce" vs "Mapreduce").
+   - ALWAYS use `toLower()` for case insensitivity.
+   - ALWAYS use `CONTAINS` instead of exact match (`=`).
+   - **Try multiple variations using `OR`**:
+     - Example: If searching for "Map Reduce", check:
+       `toLower(n.id) CONTAINS "map reduce" OR toLower(n.id) CONTAINS "mapreduce"`
 
-2. **Fuzzy Matching (Recommended):**
-   - Since IDs might vary slightly, use `toLower(n.id) CONTAINS "term"` for robust search.
-   - Example: WHERE toLower(n.id) CONTAINS "mapreduce"
+FEW-SHOT EXAMPLES (Learn from these patterns):
+
+Question: "What is Map Reduce?"
+Cypher: MATCH (c:Concept) WHERE toLower(c.id) CONTAINS "mapreduce" OR toLower(c.id) CONTAINS "map reduce" RETURN c.id
+
+Question: "Who are the authors?"
+Cypher: MATCH (p:Person)-[:AUTHOR_OF]->(d:Document) RETURN p.id
+
+Question: "What databases are mentioned?"
+Cypher: MATCH (d:Database) RETURN d.id LIMIT 10
+
+Question: "How does HDFS work?"
+Cypher: MATCH (t:Technology)-[r]-(n) WHERE toLower(t.id) CONTAINS "hdfs" RETURN t, r, n LIMIT 10
 
 The question is:
 {question}"""
