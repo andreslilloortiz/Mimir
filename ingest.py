@@ -82,8 +82,7 @@ def main():
     # 5. INITIALIZE GRAPH TRANSFORMER
     # This is the 'Magic' component that converts raw text into Nodes and Relationships
     llm_transformer = LLMGraphTransformer(
-        llm=llm,
-        node_properties=["name", "description"]
+        llm=llm
     )
 
     # 6. EXECUTE GRAPH EXTRACTION (ETL Process)

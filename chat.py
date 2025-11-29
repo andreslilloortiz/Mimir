@@ -22,13 +22,14 @@ Schema:
 {schema}
 
 CRITICAL RULES:
-1. **Properties:** - The identifier property is **'name'**. NEVER use 'id'.
-   - There is also a **'description'** property. Use it if the user asks for definitions or explanations.
-   - Correct: MATCH (n {{name: "Docker"}}) RETURN n.description
-   - Incorrect: MATCH (n {{id: "Docker"}})
+1. **Properties:** - The identifier property is **'id'**. NEVER use 'name'.
+   - The 'id' property contains the text/name of the entity.
+   - Correct: MATCH (n {{id: "Docker"}}) RETURN n.id
+   - Incorrect: MATCH (n {{name: "Docker"}})
 
 2. **Fuzzy Matching (Recommended):**
-   - Since names might vary, use `toLower(n.name) CONTAINS "term"` for robust search.
+   - Since IDs might vary slightly, use `toLower(n.id) CONTAINS "term"` for robust search.
+   - Example: WHERE toLower(n.id) CONTAINS "mapreduce"
 
 The question is:
 {question}"""
