@@ -165,6 +165,11 @@ The resources (PDF papers) used for testing and validating the functionality of 
 
 [1] T. Tharmarajasingam, thuva4/Bigdata-Papers-Reading. (Nov. 10, 2025). Accessed: Nov. 29, 2025. [Online]. Available: https://github.com/thuva4/Bigdata-Papers-Reading
 
+## License
+
+This project is open source and available under the terms of the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html).
+See the [LICENSE](LICENSE) file for the full text.
+
 ---
 
 I hope this guide has been helpful!
