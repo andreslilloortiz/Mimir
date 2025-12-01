@@ -132,6 +132,7 @@ mimir/
 ├── docker-compose.nvidia.yml  # Override configuration for NVIDIA GPU support
 ├── ingest.py                  # Script for PDF ingestion and Graph Extraction
 ├── chat.py                    # Script for RAG Chat interface
+├── LICENSE                                    # Project license
 └── README.md                  # Project documentation
 ```
 
