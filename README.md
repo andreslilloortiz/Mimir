@@ -1,6 +1,6 @@
 # Mimir
 
-Tool for Automating Knowledge Graph Extraction and Retrieval-Augmented Generation (GraphRAG) using Local LLMs.
+Experimental GraphRAG Pipeline for Knowledge Graph Construction and Querying with Local LLMs.
 
 ## About the Project
 
