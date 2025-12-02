@@ -22,6 +22,7 @@ NEO4J_PASSWORD = "password123"
 
 # --- OLLAMA MODEL CONFIGURATION ---
 DEFAULT_MODEL = "llama3.2"
+EMBEDDING_MODEL = "nomic-embed-text"
 OLLAMA_BASE_URL = "http://localhost:11434"
 AVAILABLE_MODELS = [
     "llama3.2",      # 3B - Very fast, low VRAM (Best for Ingestion)

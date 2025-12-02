@@ -119,22 +119,17 @@ def main():
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
 
-            # Custom spinner indicating potential download
             with st.spinner(f"{selected_model} is thinking (downloading if missing)..."):
                 try:
-                    # Refresh Schema to ensure new data is visible
                     graph.refresh_schema()
 
-                    # Pass the selected model to the RAG engine
-                    chain = rag_engine.get_qa_chain(graph, model_name=selected_model, verbose=True)
+                    # Initialize Hybrid Engine
+                    rag_system = rag_engine.get_qa_chain(graph, model_name=selected_model)
 
-                    # Execute Chain
-                    response = chain.invoke({"query": prompt})
-                    result = response.get("result", response)
+                    # Execute Hybrid Query
+                    result = rag_system.query(prompt)
 
                     message_placeholder.markdown(result)
-
-                    # Add assistant response to history
                     st.session_state.messages.append({"role": "assistant", "content": result})
 
                 except Exception as e:

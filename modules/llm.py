@@ -17,7 +17,7 @@
 
 import requests
 import json
-from langchain_ollama import ChatOllama
+from langchain_ollama import ChatOllama, OllamaEmbeddings
 import config
 
 def check_and_pull_model(model_name):
@@ -80,5 +80,15 @@ def get_llm(model_name=None, temperature=0):
     return ChatOllama(
         model=selected_model,
         temperature=temperature,
+        base_url=config.OLLAMA_BASE_URL
+    )
+
+def get_embeddings():
+    """Returns the configured Embedding model."""
+    # We ensure the embedding model is available (usually handled by Docker, but safe to check)
+    check_and_pull_model(config.EMBEDDING_MODEL)
+
+    return OllamaEmbeddings(
+        model=config.EMBEDDING_MODEL,
         base_url=config.OLLAMA_BASE_URL
     )

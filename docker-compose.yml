@@ -59,9 +59,11 @@ services:
     command: >
       sh -c "echo '⏳ Waiting for Ollama to start...' &&
              sleep 5 &&
-             echo '⬇️ Downloading llama3.2...' &&
+             echo '⬇️ Downloading LLM (llama3.2)...' &&
              curl -X POST http://ollama:11434/api/pull -d '{\"name\": \"llama3.2\"}' &&
-             echo '✅ ¡llama3.2 ready!'"
+             echo '⬇️ Downloading Embeddings (nomic-embed-text)...' &&
+             curl -X POST http://ollama:11434/api/pull -d '{\"name\": \"nomic-embed-text\"}' &&
+             echo '✅ System ready!'"
 
 networks:
   mimir-net:

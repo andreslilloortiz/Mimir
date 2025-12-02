@@ -19,50 +19,66 @@ import time
 import os
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader, UnstructuredMarkdownLoader
 from langchain_experimental.graph_transformers import LLMGraphTransformer
-from modules.llm import get_llm
+from langchain_neo4j import Neo4jVector
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from modules.llm import get_llm, get_embeddings
 
 def get_loader(file_path):
-    """Factory method to choose the right loader based on file extension."""
     ext = os.path.splitext(file_path)[1].lower()
-
-    if ext == ".pdf":
-        return PyPDFLoader(file_path)
-    elif ext == ".docx":
-        return Docx2txtLoader(file_path)
-    elif ext == ".txt":
-        return TextLoader(file_path, encoding="utf-8")
-    elif ext == ".md":
-        return UnstructuredMarkdownLoader(file_path)
-    else:
-        raise ValueError(f"Unsupported file format: {ext}")
+    if ext == ".pdf": return PyPDFLoader(file_path)
+    elif ext == ".docx": return Docx2txtLoader(file_path)
+    elif ext == ".txt": return TextLoader(file_path, encoding="utf-8")
+    elif ext == ".md": return UnstructuredMarkdownLoader(file_path)
+    else: raise ValueError(f"Unsupported file format: {ext}")
 
 def process_file(file_path, graph_db, model_name):
     """
-    Loads a file, extracts graph data using the SPECIFIED MODEL, and stores it in Neo4j.
+    Ingests data using HYBRID approach:
+    1. Knowledge Graph Extraction (LLMGraphTransformer)
+    2. Vector Indexing (Neo4jVector)
     """
-    # 1. Select Loader and Load Content
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
 
+    # 1. Load Content
     try:
         loader = get_loader(file_path)
-        documents = loader.load()
+        raw_documents = loader.load()
     except Exception as e:
         raise RuntimeError(f"Error loading document: {e}")
 
-    # 2. Initialize Transformer with SELECTED MODEL
-    # We use the selected model here. Smaller models are faster for this step.
+    # 2. Split Text (Crucial for Vector Search)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    documents = text_splitter.split_documents(raw_documents)
+
+    # 3. GRAPH EXTRACTION (Structured)
+    # Smaller models are faster for this step
     llm = get_llm(model_name=model_name, temperature=0)
     llm_transformer = LLMGraphTransformer(llm=llm)
 
-    # 3. Extract Graph Data
+    print("🕸️ Extracting Graph Data...")
     start_time = time.time()
     graph_documents = llm_transformer.convert_to_graph_documents(documents)
-    duration = time.time() - start_time
 
-    # 4. Persist to Neo4j
     if graph_documents:
         graph_db.add_graph_documents(graph_documents)
+
+    # 4. VECTOR INDEXING (Unstructured/Semantic)
+    print("🔢 Generating Vectors...")
+    embeddings = get_embeddings()
+
+    # Creates a vector index in Neo4j named "vector_index"
+    Neo4jVector.from_documents(
+        documents,
+        embeddings,
+        url=graph_db.url,
+        username=graph_db.username,
+        password=graph_db.password,
+        index_name="vector_index",
+        node_label="Chunk"
+    )
+
+    duration = time.time() - start_time
 
     return {
         "pages": len(documents),

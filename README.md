@@ -4,13 +4,25 @@ Experimental GraphRAG Pipeline for Knowledge Graph Construction and Querying wit
 
 ## About the Project
 
-Mimir is an open-source tool designed to experiment with Graph Retrieval-Augmented Generation (GraphRAG) using local Large Language Models. The application ingests documents (PDF, DOCX, TXT, Markdown) and utilizes local LLMs (such as Llama 3.2, Llama 3.1, Mistral, Phi-3) via Ollama to extract entities and relationships, constructing a Knowledge Graph within a Neo4j database.
+Mimir is an open-source tool designed to experiment with Hybrid Graph Retrieval-Augmented Generation (GraphRAG) using local Large Language Models. The application serves as a privacy-focused proof-of-concept, allowing users to ingest documents in various formats such as PDF, DOCX, TXT, and Markdown. It utilizes models like Llama 3.2 via Ollama to process this data locally, constructing a robust knowledge base without relying on external cloud APIs.
 
-For retrieval, it attempts to translate natural language questions into Cypher queries to fetch relevant context from the graph structure. This project serves as a proof-of-concept for building privacy-focused, local RAG pipelines that leverage graph structures rather than just vector embeddings.
+To achieve high-accuracy retrieval, Mimir performs a dual ingestion process that captures both structure and meaning. It employs an LLM to extract structured entities and relationships to build a Knowledge Graph within a Neo4j database, while simultaneously generating semantic vector embeddings using the nomic-embed-text model. This hybrid approach ensures that the system captures both the explicit structural connections between concepts and the implicit semantic nuances of the unstructured text.
 
-It features a Streamlit web interface that allows users to easily manage document ingestion and interact with the Knowledge Graph visually, without relying on command-line scripts.
+During the retrieval phase, the system translates natural language questions into Cypher queries to fetch structural context and performs vector similarity searches to retrieve semantic context. By combining these two sources, Mimir provides the LLM with a comprehensive understanding of the query, resulting in highly accurate responses. The entire pipeline is managed through a user-friendly Streamlit web interface that supports on-demand model switching and automatic downloads, making advanced RAG techniques accessible without complex command-line interactions.
 
 The project is named after Mimir, the figure from Norse mythology known for his knowledge and wisdom.
+
+## Key Features
+
+- Hybrid Search Engine: Combines structured graph lookups (Neo4j) with unstructured vector search (Embeddings) for higher accuracy.
+
+- Multi-Model Support: Switch between models like Llama 3.2, Mistral, or Phi-3 on the fly using the UI selector.
+
+- On-Demand Model Loading: Automatically downloads missing models via the Ollama API without restarting Docker.
+
+- Multi-Format Ingestion: Supports PDF, Word, Markdown, and Text files.
+
+- Interactive UI: Built with Streamlit for easy document management and graph visualization.
 
 ## Prerequisites
 
@@ -81,13 +93,13 @@ Before getting started, ensure you have the following installed and configured o
 
 3.  **Verify Model Download**:
 
-    The `mimir-init` container will automatically download the `llama3.2` model. You can monitor the progress with:
+    The mimir-init container will automatically download the base LLM (llama3.2) and the embedding model (nomic-embed-text). You can monitor the progress with:
 
     ```bash
     docker logs -f mimir-init
     ```
 
-    Wait until you see "✅ ¡llama3.2 ready\!" before proceeding.
+    Wait until you see "✅ System ready!" before proceeding.
 
 4.  **Run the Application**
 
@@ -140,10 +152,12 @@ mimir/
 
 ### Performance
 
-The `LLMGraphTransformer` process in `modules/ingestor.py` is computationally expensive.
+The `LLMGraphTransformer` process in `modules/ingestor.py` is computationally expensive. It involves two steps: LLM Graph Extraction (Heavy) and Vector Embedding Generation (Light).
 
   * **CPU Mode**: Processing a large PDF may take significant time.
   * **GPU Mode**: Strongly recommended. Ensure you use the `docker-compose.nvidia.yml` override.
+
+> Note about VRAM Usage: Ensure your GPU has enough memory. The system loads the Chat Model (e.g., llama3.2) and the Embedding Model (nomic-embed-text) sequentially.
 
 ### Visualization
 
