@@ -36,9 +36,9 @@ def get_loader(file_path):
     else:
         raise ValueError(f"Unsupported file format: {ext}")
 
-def process_file(file_path, graph_db):
+def process_file(file_path, graph_db, model_name):
     """
-    Loads a file (PDF, DOCX, TXT, MD), extracts graph data, and stores it in Neo4j.
+    Loads a file, extracts graph data using the SPECIFIED MODEL, and stores it in Neo4j.
     """
     # 1. Select Loader and Load Content
     if not os.path.exists(file_path):
@@ -50,9 +50,9 @@ def process_file(file_path, graph_db):
     except Exception as e:
         raise RuntimeError(f"Error loading document: {e}")
 
-    # 2. Initialize Transformer
-    # strict mode uses temperature=0 for factual extraction
-    llm = get_llm(temperature=0)
+    # 2. Initialize Transformer with SELECTED MODEL
+    # We use the selected model here. Smaller models are faster for this step.
+    llm = get_llm(model_name=model_name, temperature=0)
     llm_transformer = LLMGraphTransformer(llm=llm)
 
     # 3. Extract Graph Data

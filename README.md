@@ -4,7 +4,7 @@ Experimental GraphRAG Pipeline for Knowledge Graph Construction and Querying wit
 
 ## About the Project
 
-Mimir is an open-source tool designed to experiment with Graph Retrieval-Augmented Generation (GraphRAG) using local Large Language Models. The application ingests documents (PDF, DOCX, TXT, Markdown) and utilizes Llama 3.2 (via Ollama) to extract entities and relationships, constructing a Knowledge Graph within a Neo4j database.
+Mimir is an open-source tool designed to experiment with Graph Retrieval-Augmented Generation (GraphRAG) using local Large Language Models. The application ingests documents (PDF, DOCX, TXT, Markdown) and utilizes local LLMs (such as Llama 3.2, Llama 3.1, Mistral, Phi-3) via Ollama to extract entities and relationships, constructing a Knowledge Graph within a Neo4j database.
 
 For retrieval, it attempts to translate natural language questions into Cypher queries to fetch relevant context from the graph structure. This project serves as a proof-of-concept for building privacy-focused, local RAG pipelines that leverage graph structures rather than just vector embeddings.
 
@@ -101,16 +101,20 @@ Before getting started, ensure you have the following installed and configured o
 
 ## Usage Guide
 
-### 1. Ingestion (Sidebar)
+### 1. Configuration (Sidebar)
+* **LLM Brain:** Select the AI model you want to use.
+    * *Small models (e.g., Llama 3.2, Phi-3)* are faster for ingestion.
+    * *Larger models (e.g., Llama 3.1 8B, Mistral)* are smarter for chat.
+    * **Auto-Download:** If you select a model that is not installed locally, Mimir will automatically download it for you (this may take a few minutes depending on your internet connection).
 
-  * **Upload documents:** Select a document to process.
-  * **Clear Database:** Check this box if you want to wipe existing knowledge before ingesting the new file.
-  * **Start Ingestion:** This triggers the `ingestor` module. It uses the LLM to parse the text into Nodes and Relationships. *Note: This process may take time.*
+### 2. Ingestion (Sidebar)
+* **Upload File:** Select a document (`PDF`, `DOCX`, `TXT`, or `MD`).
+* **Clear Database:** Check this box to wipe existing knowledge before ingesting the new file.
+* **Start Ingestion:** This triggers the extraction process using the selected LLM. *Note: Larger models will take longer to process the document.*
 
-### 2. Chat (Main Window)
-
-  * **Ask a Question:** Type natural language queries (e.g., *"What are the main components of X?"*).
-  * **Process:** Mimir converts your question into a Cypher query, executes it against Neo4j, and synthesizes the answer using the retrieved graph context.
+### 3. Chat (Main Window)
+* **Ask a Question:** Type natural language queries (e.g., *"What are the main components of X?"*).
+* **Process:** Mimir converts your question into a Cypher query, executes it against Neo4j, and synthesizes the answer using the retrieved graph context.
 
 ## Project Structure
 

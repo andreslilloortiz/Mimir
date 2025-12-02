@@ -21,5 +21,12 @@ NEO4J_USERNAME = "neo4j"
 NEO4J_PASSWORD = "password123"
 
 # --- OLLAMA MODEL CONFIGURATION ---
-MODEL_NAME = "llama3.2"
+DEFAULT_MODEL = "llama3.2"
 OLLAMA_BASE_URL = "http://localhost:11434"
+AVAILABLE_MODELS = [
+    "llama3.2",      # 3B - Very fast, low VRAM (Best for Ingestion)
+    "phi3:mini",     # 3.8B - Smart & Efficient (Microsoft)
+    "mistral",       # 7B - Balanced performance
+    "llama3.1:8b",   # 8B - Smartest, pushes VRAM limit (Best for Chat)
+    "qwen2.5:7b"     # 7B - Great for coding/logic
+]

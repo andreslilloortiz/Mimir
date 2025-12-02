@@ -24,7 +24,7 @@ import config
 # --- PAGE CONFIG ---
 st.set_page_config(
     page_title="Mimir - GraphRAG",
-    page_icon="🧙🏻‍♂️​",
+    page_icon="🧙🏻‍♂️",
     layout="wide"
 )
 
@@ -33,7 +33,7 @@ def main():
     with st.sidebar:
         st.header("Mimir Control Panel")
 
-        # 1. Connection Check
+        # Connection Check
         try:
             graph = database.get_graph_db()
             st.success("Neo4j Connected")
@@ -41,8 +41,16 @@ def main():
             st.error(f"Connection Failed: {e}")
             st.stop()
 
-        st.caption(f"Model: {config.MODEL_NAME}")
+        # Model selector
+        st.markdown("### 🧠 LLM Brain")
+        selected_model = st.selectbox(
+            "Select Model",
+            config.AVAILABLE_MODELS,
+            index=0,
+            help="Choose the LLM used for extraction and chat."
+        )
 
+        # Ingest
         st.markdown("---")
         st.markdown("### 📂 Ingest Documents")
         uploaded_file = st.file_uploader(
@@ -55,7 +63,8 @@ def main():
 
         if st.button("Start Ingestion"):
             if uploaded_file is not None:
-                with st.spinner("Processing document... (Check terminal for logs)"):
+                # Indicate potentially long download time in the spinner
+                with st.spinner(f"Preparing {selected_model} (downloading if missing) & Processing..."):
                     try:
                         # Detect extension to save temp file correctly
                         file_ext = os.path.splitext(uploaded_file.name)[1]
@@ -68,8 +77,8 @@ def main():
                             database.clear_database(graph)
                             st.toast("Database cleared!", icon="🧹")
 
-                        # Ahora llamamos a process_file (antes process_pdf)
-                        stats = ingestor.process_file(tmp_path, graph)
+                        # Pass the selected model to the Ingestor
+                        stats = ingestor.process_file(tmp_path, graph, model_name=selected_model)
 
                         st.success(f"Ingestion Complete in {stats['duration']:.2f}s!")
                         st.markdown(f"**Chunks/Pages:** {stats['pages']} | **Entities:** {stats['entities']}")
@@ -80,14 +89,15 @@ def main():
             else:
                 st.warning("Please upload a file first.")
 
+        # Graph Neo4j
         st.markdown("---")
         st.markdown("### 🔍 Visualize Graph")
         st.caption("Inspect the generated nodes and relationships directly in Neo4j.")
         st.link_button("Open Neo4j Browser", "http://localhost:7474")
 
     # --- MAIN PAGE: CHAT INTERFACE ---
-    st.title("🧙🏻‍♂️​ Chat with Mimir")
-    st.caption("Graph Retrieval-Augmented Generation System")
+    st.title("🧙🏻‍♂️ Chat with Mimir")
+    st.caption(f"Graph Retrieval-Augmented Generation System | Powered by {selected_model}")
 
     # Initialize Chat History
     if "messages" not in st.session_state:
@@ -108,27 +118,29 @@ def main():
         # Generate Response
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
-            try:
-                # Refresh Schema to ensure new data is visible
-                graph.refresh_schema()
 
-                # Get the RAG Chain
-                chain = rag_engine.get_qa_chain(graph, verbose=True)
+            # Custom spinner indicating potential download
+            with st.spinner(f"{selected_model} is thinking (downloading if missing)..."):
+                try:
+                    # Refresh Schema to ensure new data is visible
+                    graph.refresh_schema()
 
-                # Execute Chain
-                with st.spinner("Thinking..."):
+                    # Pass the selected model to the RAG engine
+                    chain = rag_engine.get_qa_chain(graph, model_name=selected_model, verbose=True)
+
+                    # Execute Chain
                     response = chain.invoke({"query": prompt})
                     result = response.get("result", response)
 
-                message_placeholder.markdown(result)
+                    message_placeholder.markdown(result)
 
-                # Add assistant response to history
-                st.session_state.messages.append({"role": "assistant", "content": result})
+                    # Add assistant response to history
+                    st.session_state.messages.append({"role": "assistant", "content": result})
 
-            except Exception as e:
-                error_msg = f"Error: {str(e)}"
-                message_placeholder.error(error_msg)
-                st.session_state.messages.append({"role": "assistant", "content": error_msg})
+                except Exception as e:
+                    error_msg = f"Error: {str(e)}"
+                    message_placeholder.error(error_msg)
+                    st.session_state.messages.append({"role": "assistant", "content": error_msg})
 
 if __name__ == "__main__":
     main()

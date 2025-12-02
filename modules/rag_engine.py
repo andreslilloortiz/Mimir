@@ -54,9 +54,11 @@ INSTRUCTIONS FOR THE ANSWER:
 
 Answer:"""
 
-def get_qa_chain(graph_db, verbose=True):
-    """Creates the Graph RAG chain."""
-    llm = get_llm(temperature=0)
+def get_qa_chain(graph_db, model_name, verbose=True):
+    """Creates the Graph RAG chain using the selected model."""
+
+    # Initialize the specific model requested by the user
+    llm = get_llm(model_name=model_name, temperature=0)
 
     cypher_prompt = PromptTemplate(
         input_variables=["schema", "question"],

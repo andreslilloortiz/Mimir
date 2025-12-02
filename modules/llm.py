@@ -15,13 +15,70 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+import requests
+import json
 from langchain_ollama import ChatOllama
 import config
 
-def get_llm(temperature=0):
-    """Returns a configured ChatOllama instance."""
+def check_and_pull_model(model_name):
+    """
+    Checks if the model exists locally in Ollama.
+    If not, it triggers a download (pull) via the API.
+    """
+    base_url = config.OLLAMA_BASE_URL
+
+    # 1. Get list of local models
+    try:
+        response = requests.get(f"{base_url}/api/tags")
+        if response.status_code == 200:
+            models_data = response.json()
+            # Extract model names (e.g., "llama3.2:latest")
+            local_models = [m['name'] for m in models_data['models']]
+
+            # Normalize names for comparison (Ollama adds :latest automatically)
+            model_check = model_name if ":" in model_name else f"{model_name}:latest"
+
+            # Check if model exists (checking for partial match to be safe)
+            if any(model_check in m for m in local_models):
+                return True # Model exists, no need to download
+
+    except Exception as e:
+        print(f"⚠️ Warning: Could not check local models: {e}")
+        # We proceed to try creating the LLM anyway, letting LangChain handle errors
+        return True
+
+    # 2. If model is missing, trigger Pull
+    print(f"⬇️ Model '{model_name}' not found locally. Starting download...")
+
+    try:
+        payload = {"name": model_name}
+        # stream=True is important to prevent timeouts on large downloads
+        with requests.post(f"{base_url}/api/pull", json=payload, stream=True) as r:
+            r.raise_for_status()
+            # Consume the stream to ensure download completes before proceeding
+            for line in r.iter_lines():
+                if line:
+                    # Optional: Parse JSON line to show progress in logs
+                    pass
+        print(f"✅ Model '{model_name}' downloaded successfully!")
+        return True
+    except Exception as e:
+        raise RuntimeError(f"Failed to pull model {model_name}: {e}")
+
+def get_llm(model_name=None, temperature=0):
+    """
+    Returns a configured ChatOllama instance.
+    Automatically downloads the model if it is missing.
+    """
+    selected_model = model_name if model_name else config.DEFAULT_MODEL
+
+    # --- AUTO-DOWNLOAD CHECK ---
+    # This will block execution on the first run until the model is downloaded
+    check_and_pull_model(selected_model)
+    # ---------------------------
+
     return ChatOllama(
-        model=config.MODEL_NAME,
+        model=selected_model,
         temperature=temperature,
         base_url=config.OLLAMA_BASE_URL
     )

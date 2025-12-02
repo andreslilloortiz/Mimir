@@ -11,3 +11,4 @@ streamlit
 docx2txt
 unstructured
 markdown
+requests
