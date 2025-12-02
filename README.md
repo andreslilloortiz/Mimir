@@ -127,6 +127,7 @@ mimir/
 │   └── rag_engine.py         # Chat Logic (Chain & Prompts)
 ├── docker-compose.yml        # Base Docker services
 ├── docker-compose.nvidia.yml # GPU override configuration
+├── requirements.txt          # Python dependencies
 ├── LICENSE                   # Project license
 └── README.md                 # Project documentation
 ```
