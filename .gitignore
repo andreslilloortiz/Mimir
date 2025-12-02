@@ -1,5 +1,5 @@
 data
 import
-logs
 mimir-venv
 docs
+__pycache__

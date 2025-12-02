@@ -4,7 +4,11 @@ Experimental GraphRAG Pipeline for Knowledge Graph Construction and Querying wit
 
 ## About the Project
 
-Mimir is an open-source tool designed to experiment with Graph Retrieval-Augmented Generation (GraphRAG) using local Large Language Models. The application ingests PDF documents and utilizes Llama 3.2 (via Ollama) to extract entities and relationships, constructing a Knowledge Graph within a Neo4j database. For retrieval, it attempts to translate natural language questions into Cypher queries to fetch relevant context from the graph structure. This project serves as a proof-of-concept for building privacy-focused, local RAG pipelines that leverage graph structures rather than just vector embeddings.
+Mimir is an open-source tool designed to experiment with Graph Retrieval-Augmented Generation (GraphRAG) using local Large Language Models. The application ingests PDF documents and utilizes Llama 3.2 (via Ollama) to extract entities and relationships, constructing a Knowledge Graph within a Neo4j database.
+
+For retrieval, it attempts to translate natural language questions into Cypher queries to fetch relevant context from the graph structure. This project serves as a proof-of-concept for building privacy-focused, local RAG pipelines that leverage graph structures rather than just vector embeddings.
+
+It features a Streamlit web interface that allows users to easily manage document ingestion and interact with the Knowledge Graph visually, without relying on command-line scripts.
 
 The project is named after Mimir, the figure from Norse mythology known for his knowledge and wisdom.
 
@@ -56,7 +60,7 @@ Before getting started, ensure you have the following installed and configured o
     ```bash
     python3 -m venv mimir-venv
     source mimir-venv/bin/activate
-    pip install langchain langchain-community langchain-experimental langchain_ollama langchain_neo4j neo4j ollama pypdf tiktoken
+    pip install langchain langchain-community langchain-experimental langchain_ollama langchain_neo4j neo4j ollama pypdf tiktoken streamlit
     ```
 
 2.  **Launch the Infrastructure**:
@@ -85,55 +89,46 @@ Before getting started, ensure you have the following installed and configured o
 
     Wait until you see "✅ ¡llama3.2 ready\!" before proceeding.
 
-4.  **Ingest Data**:
+4.  **Run the Application**
 
-    Run the ingestion script to parse a PDF and populate the graph database.
-
-    ```bash
-    python3 ingest.py docs/document.pdf --clear
-    ```
-
-5.  **Start Chatting**:
-
-    Launch the chat interface to query your knowledge graph.
+    Launch the Streamlit interface:
 
     ```bash
-    python3 chat.py --verbose
+    streamlit run mimir.py
     ```
 
-## Running Mimir: Command Line Options
+    The application will open in your browser at http://localhost:8501.
 
-### Ingestion (`ingest.py`)
+## Usage Guide
 
-This script handles the ETL process: loading the PDF, extracting nodes/relationships using the LLM, and persisting them to Neo4j.
+### 1. Ingestion (Sidebar)
 
-| Argument | Description |
-|-|-|
-| `file_path` | **Mandatory**. Path to the PDF file you want to ingest (e.g., `docs/paper.pdf`). |
-| `-h, --help` | Show the help message and exit. |
-| `--clear` | Clear the entire Neo4j database (`MATCH (n) DETACH DELETE n`) before ingesting new data. |
+  * **Upload PDF:** Select a document to process.
+  * **Clear Database:** Check this box if you want to wipe existing knowledge before ingesting the new file.
+  * **Start Ingestion:** This triggers the `ingestor` module. It uses the LLM to parse the text into Nodes and Relationships. *Note: This process may take time.*
 
-### Chat Interface (`chat.py`)
+### 2. Chat (Main Window)
 
-This script initializes the `GraphCypherQAChain`. It translates natural language questions into Cypher queries, executes them against the database, and synthesizes the answer.
-
-| Argument | Description |
-|-|-|
-| `-h, --help` | Show the help message and exit. |
-| `--verbose` | Show the generated Cypher queries and internal reasoning of the chain in the console. |
+  * **Ask a Question:** Type natural language queries (e.g., *"What are the main components of X?"*).
+  * **Process:** Mimir converts your question into a Cypher query, executes it against Neo4j, and synthesizes the answer using the retrieved graph context.
 
 ## Project Structure
 
-The repository is organized as follows:
+The codebase is organized into a modular structure to separate logic from the interface:
 
 ```text
 mimir/
-├── docker-compose.yml         # Base Docker services (Neo4j, Ollama, Init)
-├── docker-compose.nvidia.yml  # Override configuration for NVIDIA GPU support
-├── ingest.py                  # Script for PDF ingestion and Graph Extraction
-├── chat.py                    # Script for RAG Chat interface
-├── LICENSE                                    # Project license
-└── README.md                  # Project documentation
+├── mimir.py                  # Main Entry Point (Streamlit UI)
+├── config.py                 # Configuration settings
+├── modules/                  # Backend Logic
+│   ├── database.py           # Neo4j Connection Management
+│   ├── llm.py                # Ollama Model Factory
+│   ├── ingestor.py           # ETL Logic (PDF -> Knowledge Graph)
+│   └── rag_engine.py         # Chat Logic (Chain & Prompts)
+├── docker-compose.yml        # Base Docker services
+├── docker-compose.nvidia.yml # GPU override configuration
+├── LICENSE                   # Project license
+└── README.md                 # Project documentation
 ```
 
 ## Developer Notes
