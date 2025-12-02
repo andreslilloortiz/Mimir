@@ -17,21 +17,38 @@
 
 import time
 import os
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader, UnstructuredMarkdownLoader
 from langchain_experimental.graph_transformers import LLMGraphTransformer
 from modules.llm import get_llm
 
-def process_pdf(pdf_path, graph_db):
-    """
-    Loads a PDF, extracts the graph using LLM, and stores it in Neo4j.
-    Returns a dictionary with processing stats.
-    """
-    # 1. Load PDF
-    if not os.path.exists(pdf_path):
-        raise FileNotFoundError(f"File not found: {pdf_path}")
+def get_loader(file_path):
+    """Factory method to choose the right loader based on file extension."""
+    ext = os.path.splitext(file_path)[1].lower()
 
-    loader = PyPDFLoader(pdf_path)
-    documents = loader.load()
+    if ext == ".pdf":
+        return PyPDFLoader(file_path)
+    elif ext == ".docx":
+        return Docx2txtLoader(file_path)
+    elif ext == ".txt":
+        return TextLoader(file_path, encoding="utf-8")
+    elif ext == ".md":
+        return UnstructuredMarkdownLoader(file_path)
+    else:
+        raise ValueError(f"Unsupported file format: {ext}")
+
+def process_file(file_path, graph_db):
+    """
+    Loads a file (PDF, DOCX, TXT, MD), extracts graph data, and stores it in Neo4j.
+    """
+    # 1. Select Loader and Load Content
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    try:
+        loader = get_loader(file_path)
+        documents = loader.load()
+    except Exception as e:
+        raise RuntimeError(f"Error loading document: {e}")
 
     # 2. Initialize Transformer
     # strict mode uses temperature=0 for factual extraction
@@ -40,12 +57,12 @@ def process_pdf(pdf_path, graph_db):
 
     # 3. Extract Graph Data
     start_time = time.time()
-    # NOTE: For huge PDFs, you might want to slice documents[:5] for testing
     graph_documents = llm_transformer.convert_to_graph_documents(documents)
     duration = time.time() - start_time
 
     # 4. Persist to Neo4j
-    graph_db.add_graph_documents(graph_documents)
+    if graph_documents:
+        graph_db.add_graph_documents(graph_documents)
 
     return {
         "pages": len(documents),

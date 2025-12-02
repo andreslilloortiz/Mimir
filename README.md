@@ -4,7 +4,7 @@ Experimental GraphRAG Pipeline for Knowledge Graph Construction and Querying wit
 
 ## About the Project
 
-Mimir is an open-source tool designed to experiment with Graph Retrieval-Augmented Generation (GraphRAG) using local Large Language Models. The application ingests PDF documents and utilizes Llama 3.2 (via Ollama) to extract entities and relationships, constructing a Knowledge Graph within a Neo4j database.
+Mimir is an open-source tool designed to experiment with Graph Retrieval-Augmented Generation (GraphRAG) using local Large Language Models. The application ingests documents (PDF, DOCX, TXT, Markdown) and utilizes Llama 3.2 (via Ollama) to extract entities and relationships, constructing a Knowledge Graph within a Neo4j database.
 
 For retrieval, it attempts to translate natural language questions into Cypher queries to fetch relevant context from the graph structure. This project serves as a proof-of-concept for building privacy-focused, local RAG pipelines that leverage graph structures rather than just vector embeddings.
 
@@ -103,7 +103,7 @@ Before getting started, ensure you have the following installed and configured o
 
 ### 1. Ingestion (Sidebar)
 
-  * **Upload PDF:** Select a document to process.
+  * **Upload documents:** Select a document to process.
   * **Clear Database:** Check this box if you want to wipe existing knowledge before ingesting the new file.
   * **Start Ingestion:** This triggers the `ingestor` module. It uses the LLM to parse the text into Nodes and Relationships. *Note: This process may take time.*
 
@@ -123,7 +123,7 @@ mimir/
 ├── modules/                  # Backend Logic
 │   ├── database.py           # Neo4j Connection Management
 │   ├── llm.py                # Ollama Model Factory
-│   ├── ingestor.py           # ETL Logic (PDF -> Knowledge Graph)
+│   ├── ingestor.py           # ETL Logic (Multi-format -> Knowledge Graph)
 │   └── rag_engine.py         # Chat Logic (Chain & Prompts)
 ├── docker-compose.yml        # Base Docker services
 ├── docker-compose.nvidia.yml # GPU override configuration
@@ -136,7 +136,7 @@ mimir/
 
 ### Performance
 
-The `LLMGraphTransformer` process in `ingest.py` is computationally expensive.
+The `LLMGraphTransformer` process in `modules/ingestor.py` is computationally expensive.
 
   * **CPU Mode**: Processing a large PDF may take significant time.
   * **GPU Mode**: Strongly recommended. Ensure you use the `docker-compose.nvidia.yml` override.

@@ -8,3 +8,6 @@ ollama
 pypdf
 tiktoken
 streamlit
+docx2txt
+unstructured
+markdown

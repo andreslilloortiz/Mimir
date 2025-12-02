@@ -45,30 +45,34 @@ def main():
 
         st.markdown("---")
         st.markdown("### 📂 Ingest Documents")
-        uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
+        uploaded_file = st.file_uploader(
+            "Upload File",
+            type=["pdf", "docx", "txt", "md"],
+            help="Supported formats: PDF, Word, Text, Markdown"
+        )
+
         clear_db = st.checkbox("Clear Database before ingestion", value=False)
 
         if st.button("Start Ingestion"):
             if uploaded_file is not None:
                 with st.spinner("Processing document... (Check terminal for logs)"):
                     try:
-                        # Save uploaded file to temp
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+                        # Detect extension to save temp file correctly
+                        file_ext = os.path.splitext(uploaded_file.name)[1]
+
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp_file:
                             tmp_file.write(uploaded_file.read())
                             tmp_path = tmp_file.name
 
-                        # Clear DB if requested
                         if clear_db:
                             database.clear_database(graph)
                             st.toast("Database cleared!", icon="🧹")
 
-                        # Run Ingestion Module
-                        stats = ingestor.process_pdf(tmp_path, graph)
+                        # Ahora llamamos a process_file (antes process_pdf)
+                        stats = ingestor.process_file(tmp_path, graph)
 
                         st.success(f"Ingestion Complete in {stats['duration']:.2f}s!")
-                        st.markdown(f"**Pages:** {stats['pages']} | **Entities:** {stats['entities']}")
-
-                        # Cleanup
+                        st.markdown(f"**Chunks/Pages:** {stats['pages']} | **Entities:** {stats['entities']}")
                         os.remove(tmp_path)
 
                     except Exception as e:
