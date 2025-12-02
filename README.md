@@ -60,7 +60,7 @@ Before getting started, ensure you have the following installed and configured o
     ```bash
     python3 -m venv mimir-venv
     source mimir-venv/bin/activate
-    pip install langchain langchain-community langchain-experimental langchain_ollama langchain_neo4j neo4j ollama pypdf tiktoken streamlit
+    pip install -r requirements.txt
     ```
 
 2.  **Launch the Infrastructure**:

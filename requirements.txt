@@ -1,0 +1,11 @@
+langchain
+langchain-community
+langchain-experimental
+langchain_ollama
+langchain_neo4j
+neo4j
+ollama
+pypdf
+tiktoken
+streamlit
+streamlit-agraph
