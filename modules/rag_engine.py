@@ -76,7 +76,9 @@ class HybridRAG:
                 username=config.NEO4J_USERNAME,
                 password=config.NEO4J_PASSWORD,
                 index_name="vector_index",
-                node_label="Chunk"
+                node_label="Chunk",
+                text_node_properties=["text"],
+                embedding_node_property="embedding"
             )
         except Exception as e:
             print(f"⚠️ Vector index not found (graph empty?): {e}")
