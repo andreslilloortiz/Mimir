@@ -90,6 +90,7 @@ Before getting started, ensure you have the following installed and configured o
         ```bash
         docker compose -f docker-compose.yml -f docker-compose.nvidia.yml up -d
         ```
+    > Note about Ollama: if you have Ollama installed like a service in your computer, stop it first with `sudo systemctl stop ollama`.
 
 3.  **Verify Model Download**:
 
@@ -110,6 +111,14 @@ Before getting started, ensure you have the following installed and configured o
     ```
 
     The application will open in your browser at http://localhost:8501.
+
+5.  **Shut down the Infrastructure**
+
+    It is recommended to shut down the Neo4j and Ollama services when the job is finished. All changes will be persistent in the data folder.
+
+    ```bash
+    docker compose down
+    ```
 
 ## Usage Guide
 
