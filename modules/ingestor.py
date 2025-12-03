@@ -17,6 +17,7 @@
 
 import time
 import os
+import config
 from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader, UnstructuredMarkdownLoader
 from langchain_experimental.graph_transformers import LLMGraphTransformer
 from langchain_neo4j import Neo4jVector
@@ -71,9 +72,9 @@ def process_file(file_path, graph_db, model_name):
     Neo4jVector.from_documents(
         documents,
         embeddings,
-        url=graph_db.url,
-        username=graph_db.username,
-        password=graph_db.password,
+        url=config.NEO4J_URI,
+        username=config.NEO4J_USERNAME,
+        password=config.NEO4J_PASSWORD,
         index_name="vector_index",
         node_label="Chunk"
     )

@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+import config
 from langchain_neo4j import GraphCypherQAChain
 from langchain_core.prompts import PromptTemplate
 from modules.llm import get_llm
-
 from langchain_neo4j import GraphCypherQAChain, Neo4jVector
 from langchain_core.prompts import PromptTemplate
 from modules.llm import get_llm, get_embeddings
@@ -72,9 +72,9 @@ class HybridRAG:
         try:
             self.vector_store = Neo4jVector.from_existing_graph(
                 embedding=self.embeddings,
-                url=self.graph.url,
-                username=self.graph.username,
-                password=self.graph.password,
+                url=config.NEO4J_URI,
+                username=config.NEO4J_USERNAME,
+                password=config.NEO4J_PASSWORD,
                 index_name="vector_index",
                 node_label="Chunk"
             )
