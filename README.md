@@ -102,7 +102,7 @@ Before getting started, ensure you have the following installed and configured o
 
     Wait until you see "✅ System ready!" before proceeding.
 
-4.  **Run the Application**
+4.  **Run the Application**:
 
     Launch the Streamlit interface:
 
@@ -112,7 +112,7 @@ Before getting started, ensure you have the following installed and configured o
 
     The application will open in your browser at http://localhost:8501.
 
-5.  **Shut down the Infrastructure**
+5.  **Shut down the Infrastructure**:
 
     It is recommended to shut down the Neo4j and Ollama services when the job is finished. All changes will be persistent in the data folder.
 
