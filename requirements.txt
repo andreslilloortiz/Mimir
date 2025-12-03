@@ -12,3 +12,4 @@ docx2txt
 unstructured
 markdown
 requests
+streamlit-option-menu

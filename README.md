@@ -1,6 +1,6 @@
 # Mimir
 
-Experimental GraphRAG Pipeline for Knowledge Graph Construction and Querying with Local LLMs.
+Experimental Hybrid GraphRAG Pipeline for Knowledge Graph Construction and Querying with Local LLMs.
 
 ## About the Project
 
@@ -22,7 +22,7 @@ The project is named after Mimir, the figure from Norse mythology known for his 
 
 - Multi-Format Ingestion: Supports PDF, Word, Markdown, and Text files.
 
-- Interactive UI: Built with Streamlit for easy document management and graph visualization.
+- Modern & Clean UI: Features a minimalist interface with dedicated navigation for chatting and document management, utilizing distinct views for a clutter-free experience.
 
 ## Prerequisites
 
@@ -122,20 +122,33 @@ Before getting started, ensure you have the following installed and configured o
 
 ## Usage Guide
 
-### 1. Configuration (Sidebar)
-* **LLM Brain:** Select the AI model you want to use.
-    * *Small models (e.g., Llama 3.2, Phi-3)* are faster for ingestion.
-    * *Larger models (e.g., Llama 3.1 8B, Mistral)* are smarter for chat.
-    * **Auto-Download:** If you select a model that is not installed locally, Mimir will automatically download it for you (this may take a few minutes depending on your internet connection).
+The application is organized into two main views, accessible via the sidebar navigation menu:
 
-### 2. Ingestion (Sidebar)
-* **Upload File:** Select a document (`PDF`, `DOCX`, `TXT`, or `MD`).
-* **Clear Database:** Check this box to wipe existing knowledge before ingesting the new file.
-* **Start Ingestion:** This triggers the extraction process using the selected LLM. *Note: Larger models will take longer to process the document.*
+### 1. Sidebar Control Panel
+* **Navigation:** Use the menu to switch between **"Chat"** (Interaction) and **"Ingest"** (Document Management).
+* **AI Brain:** Select the LLM you want to use.
+    * *Status Indicators:* 🟢 indicates the model is ready; 🟠 indicates it will be downloaded on first use.
+* **Database Status:** Quickly check if Neo4j is connected and open the Graph Browser via the link.
 
-### 3. Chat (Main Window)
-* **Ask a Question:** Type natural language queries (e.g., *"What are the main components of X?"*).
-* **Process:** Mimir converts your question into a Cypher query, executes it against Neo4j, and synthesizes the answer using the retrieved graph context.
+### 2. View: Ingest
+Select **"Ingest"** in the sidebar menu to access the document processing pipeline.
+1.  **Upload:** Drag and drop your files (`PDF`, `DOCX`, `TXT`, `MD`) into the main area.
+2.  **Settings:** Expand "Advanced Settings" if you wish to clear the database before ingestion.
+3.  **Process:** Click **"Process Document"**. Mimir will display a real-time status log showing:
+    * Temp file saving.
+    * Database cleaning (if selected).
+    * Graph extraction & Vector embedding generation.
+4.  **Metrics:** Once complete, view statistics on processing time, chunks created, and entities extracted.
+
+![ingest](screenshots/ingest.png)
+
+### 3. View: Chat
+Select **"Chat"** in the sidebar menu to query your knowledge base.
+* **Ask:** Type natural language queries (e.g., *"What concepts are related to X?"*).
+* **Thinking Process:** The selected model (e.g., Llama 3.2) will analyze the query, generating Cypher queries for the graph and performing vector searches for context.
+* **Result:** The system synthesizes an answer based on the hybrid retrieval.
+
+![chat](screenshots/chat.png)
 
 ## Project Structure
 
@@ -180,6 +193,13 @@ Sample query to visualize the whole graph:
 
 ```cypher
 MATCH (n)-[r]->(m) RETURN n,r,m
+```
+
+Sample query to visualize the vectorized documents:
+
+```cypher
+MATCH (c:Chunk)
+RETURN c.text AS Fragment
 ```
 
 ## References
