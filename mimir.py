@@ -70,7 +70,7 @@ def main():
         if st.button("Start Ingestion"):
             if uploaded_file is not None:
                 # Indicate potentially long download time in the spinner
-                with st.spinner(f"Preparing {selected_model} (downloading if missing) & Processing..."):
+                with st.spinner(f"Preparing {selected_model} & Processing..."):
                     try:
                         # Detect extension to save temp file correctly
                         file_ext = os.path.splitext(uploaded_file.name)[1]
@@ -125,7 +125,7 @@ def main():
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
 
-            with st.spinner(f"{selected_model} is thinking (downloading if missing)..."):
+            with st.spinner(f"{selected_model} is thinking..."):
                 try:
                     graph.refresh_schema()
 
