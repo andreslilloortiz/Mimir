@@ -18,7 +18,7 @@
 import streamlit as st
 import os
 import tempfile
-from modules import database, ingestor, rag_engine
+from modules import database, ingestor, rag_engine, llm
 import config
 
 # --- PAGE CONFIG ---
@@ -49,6 +49,12 @@ def main():
             index=0,
             help="Choose the LLM used for extraction and chat."
         )
+
+        is_installed = llm.is_model_available(selected_model)
+        if is_installed:
+            st.success(f"**{selected_model}** is ready to use.")
+        else:
+            st.warning(f"**{selected_model}** not found. It will be downloaded automatically on first use (this may take time).")
 
         # Ingest
         st.markdown("---")

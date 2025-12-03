@@ -20,6 +20,27 @@ import json
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 import config
 
+def _get_local_models():
+    """Helper to get the list of installed models from Ollama."""
+    try:
+        response = requests.get(f"{config.OLLAMA_BASE_URL}/api/tags")
+        if response.status_code == 200:
+            models_data = response.json()
+            return [m['name'] for m in models_data['models']]
+    except Exception as e:
+        print(f"⚠️ Warning: Could not connect to Ollama: {e}")
+        return []
+    return []
+
+def is_model_available(model_name):
+    """Returns True if the model is already installed locally."""
+    local_models = _get_local_models()
+    # Normalize naming (Ollama assumes :latest)
+    check_name = model_name if ":" in model_name else f"{model_name}:latest"
+
+    # Check for partial match (e.g. "llama3.2" matching "llama3.2:latest")
+    return any(check_name in m for m in local_models)
+
 def check_and_pull_model(model_name):
     """
     Checks if the model exists locally in Ollama.
