@@ -131,31 +131,35 @@ The application is organized into three main views, accessible via the sidebar n
 * **Database Status:** Quickly check if Neo4j is connected and open the Graph Browser via the link.
 
 ### 2. View: Ingest
-Select **"Ingest"** in the sidebar to access the document processing pipeline.
+Select **"Ingest"** in the sidebar to feed knowledge into Mimir. You can choose between two sources using the tabs:
+
+#### 📄 File Upload
 1.  **Upload:** Drag and drop your files (`PDF`, `DOCX`, `TXT`, `MD`) into the main area.
 2.  **Settings:** Expand "Advanced Settings" if you wish to clear the database before ingestion.
-3.  **Process:** Click **"Process Document"**. Mimir will display a real-time status log showing:
-    * Temp file saving.
-    * Database cleaning (if selected).
-    * Graph extraction & Vector embedding generation.
-4.  **Metrics:** Once complete, view statistics on processing time, chunks created, and entities extracted.
+3.  **Process:** Click **"Process Document"** to start the hybrid extraction pipeline.
+
+#### 🌐 Web URL
+1.  **Enter URL:** Paste a valid website link (e.g., a Wikipedia article or technical documentation).
+2.  **Process:** Click **"Process URL"**. Mimir will scrape the content, clean the HTML, and process it just like a local document.
+
+*Real-time logs will show the progress of Temp saving, Database cleaning, Graph extraction & Vector embedding generation.*
 
 ![ingest](screenshots/ingest.png)
 
 ### 3. View: Chat
 Select **"Chat"** in the sidebar to query your knowledge base.
 * **Ask:** Type natural language queries (e.g., *"What concepts are related to X?"*).
-* **Thinking Process:** The selected model (e.g., Llama 3.2) will analyze the query, generating Cypher queries for the graph and performing vector searches for context.
-* **Result:** The system synthesizes an answer based on the hybrid retrieval and provide reference sources.
+* **Thinking Process:** The selected model will analyze the query, performing both **Graph Cypher queries** (structure) and **Vector Similarity searches** (context).
+* **Result:** The system provides a synthesized answer and displays a **"📚 Reference Sources"** expander, citing the exact files/URLs and pages used to generate the response.
 
 ![chat](screenshots/chat.png)
 
 ### 4. View: Analytics
-Select **"Analytics"** in the sidebar to perform Graph Data Science (GDS) tasks on your ingested data.
-* **Overview:** Instantly view the total count of Nodes (Entities) and Relationships in your Knowledge Graph.
-* **Deep Analysis:** Click **"Run Deep Analysis"** to execute advanced algorithms:
-    * **PageRank:** Visualizes the most influential and central concepts in the graph using an interactive bar chart.
-    * **Community Detection:** Identifies clusters of related topics (using the Louvain algorithm) and presents them in a structured table, helping you understand the thematic structure of the documents.
+Select **"Analytics"** in the sidebar to perform Graph Data Science (GDS) tasks.
+* **Overview:** View the total count of Nodes and Relationships.
+* **Deep Analysis:** Run algorithms to discover hidden patterns:
+    * **PageRank:** Visualizes the most influential concepts.
+    * **Community Detection:** Identifies thematic clusters using the Louvain algorithm.
 
 ![analytics](screenshots/analytics.png)
 

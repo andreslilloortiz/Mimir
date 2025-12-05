@@ -17,12 +17,12 @@
 
 import time
 import os
-import config
-from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader, UnstructuredMarkdownLoader
+from langchain_community.document_loaders import PyPDFLoader, Docx2txtLoader, TextLoader, UnstructuredMarkdownLoader, WebBaseLoader
 from langchain_experimental.graph_transformers import LLMGraphTransformer
 from langchain_neo4j import Neo4jVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from modules.llm import get_llm, get_embeddings
+import config
 
 def get_loader(file_path):
     ext = os.path.splitext(file_path)[1].lower()
@@ -32,50 +32,34 @@ def get_loader(file_path):
     elif ext == ".md": return UnstructuredMarkdownLoader(file_path)
     else: raise ValueError(f"Unsupported file format: {ext}")
 
-def process_file(file_path, graph_db, model_name, original_filename=None):
+def _run_pipeline(documents, graph_db, model_name, source_name):
     """
-    Ingests data using HYBRID approach:
-    1. Knowledge Graph Extraction (LLMGraphTransformer)
-    2. Vector Indexing (Neo4jVector)
+    Core pipeline: Split -> Graph Extraction -> Vector Indexing.
+    Used by both File and URL ingestors.
     """
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"File not found: {file_path}")
-
-    # 1. Load Content
-    try:
-        loader = get_loader(file_path)
-        raw_documents = loader.load()
-    except Exception as e:
-        raise RuntimeError(f"Error loading document: {e}")
-
-    # 2. Split Text (Crucial for Vector Search)
+    # 1. Split Text
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    documents = text_splitter.split_documents(raw_documents)
+    chunks = text_splitter.split_documents(documents)
 
-    # Original filename
-    if original_filename:
-        for doc in documents:
-            doc.metadata["source"] = original_filename
+    # Overwrite source metadata for better citations
+    for doc in chunks:
+        doc.metadata["source"] = source_name
 
-    # 3. GRAPH EXTRACTION (Structured)
-    # Smaller models are faster for this step
+    # 2. GRAPH EXTRACTION (Structured)
     llm = get_llm(model_name=model_name, temperature=0)
     llm_transformer = LLMGraphTransformer(llm=llm)
 
-    print("🕸️ Extracting Graph Data...")
     start_time = time.time()
-    graph_documents = llm_transformer.convert_to_graph_documents(documents)
+    graph_documents = llm_transformer.convert_to_graph_documents(chunks)
 
     if graph_documents:
         graph_db.add_graph_documents(graph_documents)
 
-    # 4. VECTOR INDEXING (Unstructured/Semantic)
-    print("🔢 Generating Vectors...")
+    # 3. VECTOR INDEXING (Unstructured/Semantic)
     embeddings = get_embeddings()
 
-    # Creates a vector index in Neo4j named "vector_index"
     Neo4jVector.from_documents(
-        documents,
+        chunks,
         embeddings,
         url=config.NEO4J_URI,
         username=config.NEO4J_USERNAME,
@@ -87,7 +71,26 @@ def process_file(file_path, graph_db, model_name, original_filename=None):
     duration = time.time() - start_time
 
     return {
-        "pages": len(documents),
+        "pages": len(chunks),
         "entities": len(graph_documents),
         "duration": duration
     }
+
+def process_file(file_path, graph_db, model_name, original_filename=None):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
+
+    try:
+        loader = get_loader(file_path)
+        documents = loader.load()
+        return _run_pipeline(documents, graph_db, model_name, original_filename or file_path)
+    except Exception as e:
+        raise RuntimeError(f"Error processing file: {e}")
+
+def process_url(url, graph_db, model_name):
+    try:
+        loader = WebBaseLoader(url)
+        documents = loader.load()
+        return _run_pipeline(documents, graph_db, model_name, url)
+    except Exception as e:
+        raise RuntimeError(f"Error processing URL: {e}")

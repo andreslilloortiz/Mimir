@@ -135,61 +135,84 @@ def main():
                     except Exception as e:
                         placeholder.error(f"Error: {e}")
 
-    # 3. VIEW: DOCUMENT MANAGEMENT
+# 3. VIEW: DOCUMENT MANAGEMENT
     elif view == "Ingest":
         st.subheader("Knowledge Ingestion")
 
-        # File Uploader
-        uploaded_file = st.file_uploader(
-            "Upload documents",
-            type=["pdf", "docx", "txt", "md"],
-            label_visibility="collapsed"
-        )
-
-        # Settings
         with st.expander("⚙️ Advanced Settings"):
             clear_db = st.toggle("Clear existing database before ingestion")
 
-        # Action
-        if uploaded_file and st.button("Process Document", type="primary", use_container_width=True):
-            graph = database.get_graph_db()
+        tab_file, tab_url = st.tabs(["📄 File Upload", "🌐 Web URL"])
 
-            with st.status("Running Ingestion Pipeline...", expanded=True) as status:
-                try:
-                    # Step 1
-                    st.write("📂 Saving temporary file...")
-                    ext = os.path.splitext(uploaded_file.name)[1]
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
-                        tmp.write(uploaded_file.read())
-                        tmp_path = tmp.name
+        # --- TAB 1: ARCHIVOS ---
+        with tab_file:
+            uploaded_file = st.file_uploader(
+                "Upload documents",
+                type=["pdf", "docx", "txt", "md"],
+                label_visibility="collapsed"
+            )
 
-                    # Step 2
-                    if clear_db:
-                        st.write("🧹 Wiping Neo4j database...")
-                        database.clear_database(graph)
+            if uploaded_file and st.button("Process Document", type="primary", use_container_width=True):
+                graph = database.get_graph_db()
 
-                    # Step 3
-                    st.write(f"🧠 Extracting Graph & Vectors using {selected_model}...")
-                    stats = ingestor.process_file(
-                        tmp_path,
-                        graph,
-                        model_name=selected_model,
-                        original_filename=uploaded_file.name
-                    )
+                with st.status("Running File Ingestion Pipeline...", expanded=True) as status:
+                    try:
+                        st.write("📂 Saving temporary file...")
+                        ext = os.path.splitext(uploaded_file.name)[1]
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
+                            tmp.write(uploaded_file.read())
+                            tmp_path = tmp.name
 
-                    os.remove(tmp_path)
+                        if clear_db:
+                            st.write("🧹 Wiping Neo4j database...")
+                            database.clear_database(graph)
 
-                    status.update(label="✅ Ingestion Complete!", state="complete", expanded=False)
+                        st.write(f"🧠 Extracting Graph & Vectors using {selected_model}...")
+                        stats = ingestor.process_file(tmp_path, graph, model_name=selected_model, original_filename=uploaded_file.name)
 
-                    st.divider()
-                    col1, col2, col3 = st.columns(3)
-                    col1.metric("Time", f"{stats['duration']:.2f}s")
-                    col2.metric("Chunks", stats['pages'])
-                    col3.metric("Entities", stats['entities'])
+                        os.remove(tmp_path)
+                        status.update(label="✅ Ingestion Complete!", state="complete", expanded=False)
 
-                except Exception as e:
-                    status.update(label="❌ Ingestion Failed", state="error")
-                    st.error(f"Error: {e}")
+                        st.divider()
+                        col1, col2, col3 = st.columns(3)
+                        col1.metric("Time", f"{stats['duration']:.2f}s")
+                        col2.metric("Chunks", stats['pages'])
+                        col3.metric("Entities", stats['entities'])
+
+                    except Exception as e:
+                        status.update(label="❌ Ingestion Failed", state="error")
+                        st.error(f"Error: {e}")
+
+        # --- TAB 2: URLS ---
+        with tab_url:
+            target_url = st.text_input("Enter URL", placeholder="https://en.wikipedia.org/wiki/Graph_database")
+
+            if target_url and st.button("Process URL", type="primary", use_container_width=True):
+                graph = database.get_graph_db()
+
+                with st.status("Running Web Ingestion Pipeline...", expanded=True) as status:
+                    try:
+                        st.write(f"🌐 Fetching content from {target_url}...")
+
+                        if clear_db:
+                            st.write("🧹 Wiping Neo4j database...")
+                            database.clear_database(graph)
+
+                        st.write(f"🧠 Extracting Graph & Vectors using {selected_model}...")
+
+                        stats = ingestor.process_url(target_url, graph, model_name=selected_model)
+
+                        status.update(label="✅ Ingestion Complete!", state="complete", expanded=False)
+
+                        st.divider()
+                        col1, col2, col3 = st.columns(3)
+                        col1.metric("Time", f"{stats['duration']:.2f}s")
+                        col2.metric("Chunks", stats['pages'])
+                        col3.metric("Entities", stats['entities'])
+
+                    except Exception as e:
+                        status.update(label="❌ Ingestion Failed", state="error")
+                        st.error(f"Error: {e}")
 
     # 4. VIEW: ANALYTICS (NEW)
     elif view == "Analytics":

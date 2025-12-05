@@ -14,3 +14,4 @@ markdown
 requests
 streamlit-option-menu
 pandas
+beautifulsoup4
