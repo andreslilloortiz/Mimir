@@ -99,12 +99,22 @@ class HybridRAG:
         )
 
     def query(self, user_question):
-        # A. Vector Search
+        # A. Vector Search (Retrieving Sources)
         vector_context = "No vector data found."
+        source_documents = [] # sources list
+
         if self.vector_store:
             try:
                 docs = self.vector_store.similarity_search(user_question, k=3)
                 vector_context = "\n".join([d.page_content for d in docs])
+
+                for d in docs:
+                    source_documents.append({
+                        "content": d.page_content,
+                        "source": d.metadata.get("source", "Unknown"),
+                        "page": d.metadata.get("page", "N/A")
+                    })
+
             except Exception as e:
                 print(f"Vector search warning: {e}")
 
@@ -129,8 +139,10 @@ class HybridRAG:
             "question": user_question
         })
 
-        return response.content
+        return {
+            "answer": response.content,
+            "sources": source_documents
+        }
 
 def get_qa_chain(graph_db, model_name, verbose=True):
-    """Returns the Hybrid RAG engine."""
     return HybridRAG(graph_db, model_name)

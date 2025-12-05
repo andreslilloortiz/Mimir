@@ -146,7 +146,7 @@ Select **"Ingest"** in the sidebar to access the document processing pipeline.
 Select **"Chat"** in the sidebar to query your knowledge base.
 * **Ask:** Type natural language queries (e.g., *"What concepts are related to X?"*).
 * **Thinking Process:** The selected model (e.g., Llama 3.2) will analyze the query, generating Cypher queries for the graph and performing vector searches for context.
-* **Result:** The system synthesizes an answer based on the hybrid retrieval.
+* **Result:** The system synthesizes an answer based on the hybrid retrieval and provide reference sources.
 
 ![chat](screenshots/chat.png)
 

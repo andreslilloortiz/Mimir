@@ -106,10 +106,32 @@ def main():
 
                         # Initialize Hybrid RAG
                         rag = rag_engine.get_qa_chain(graph, model_name=selected_model)
-                        response = rag.query(prompt)
+                        response_data = rag.query(prompt)
 
-                        placeholder.markdown(response)
-                        st.session_state.messages.append({"role": "assistant", "content": response})
+                        answer_text = response_data["answer"]
+                        sources = response_data["sources"]
+
+                        # 1. Render the main answer
+                        placeholder.markdown(answer_text)
+
+                        # 2. Render sources
+                        if sources:
+                            with st.expander("📚 Reference Sources"):
+                                for i, doc in enumerate(sources):
+                                    # Clean up filename
+                                    source_name = os.path.basename(doc.get('source', 'Unknown'))
+                                    page = doc.get('page', 'N/A')
+                                    # Preview content (first 250 chars)
+                                    content_preview = doc.get('content', '')[:250].replace('\n', ' ')
+
+                                    st.markdown(f"**{i+1}. {source_name}** (Page {page})")
+                                    st.caption(f"_{content_preview}..._")
+                                    if i < len(sources) - 1:
+                                        st.divider()
+
+                        # 3. Save only text to history to keep context clean
+                        st.session_state.messages.append({"role": "assistant", "content": answer_text})
+
                     except Exception as e:
                         placeholder.error(f"Error: {e}")
 
@@ -148,7 +170,12 @@ def main():
 
                     # Step 3
                     st.write(f"🧠 Extracting Graph & Vectors using {selected_model}...")
-                    stats = ingestor.process_file(tmp_path, graph, model_name=selected_model)
+                    stats = ingestor.process_file(
+                        tmp_path,
+                        graph,
+                        model_name=selected_model,
+                        original_filename=uploaded_file.name
+                    )
 
                     os.remove(tmp_path)
 

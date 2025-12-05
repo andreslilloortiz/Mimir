@@ -32,7 +32,7 @@ def get_loader(file_path):
     elif ext == ".md": return UnstructuredMarkdownLoader(file_path)
     else: raise ValueError(f"Unsupported file format: {ext}")
 
-def process_file(file_path, graph_db, model_name):
+def process_file(file_path, graph_db, model_name, original_filename=None):
     """
     Ingests data using HYBRID approach:
     1. Knowledge Graph Extraction (LLMGraphTransformer)
@@ -51,6 +51,11 @@ def process_file(file_path, graph_db, model_name):
     # 2. Split Text (Crucial for Vector Search)
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     documents = text_splitter.split_documents(raw_documents)
+
+    # Original filename
+    if original_filename:
+        for doc in documents:
+            doc.metadata["source"] = original_filename
 
     # 3. GRAPH EXTRACTION (Structured)
     # Smaller models are faster for this step
