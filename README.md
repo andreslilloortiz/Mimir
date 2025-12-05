@@ -4,7 +4,7 @@ Experimental Hybrid GraphRAG Pipeline for Knowledge Graph Construction and Query
 
 ## About the Project
 
-Mimir is an open-source tool designed to experiment with Hybrid Graph Retrieval-Augmented Generation (GraphRAG) using local Large Language Models. The application serves as a privacy-focused proof-of-concept, allowing users to ingest documents in various formats such as PDF, DOCX, TXT, and Markdown. It utilizes models like Llama 3.2 via Ollama to process this data locally, constructing a robust knowledge base without relying on external cloud APIs.
+Mimir is an open-source tool designed to experiment with Hybrid Graph Retrieval-Augmented Generation (GraphRAG) using local Large Language Models. The application serves as a privacy-focused proof-of-concept, allowing users to ingest documents in various formats such as URL, PDF, DOCX, TXT, and Markdown. It utilizes models like Llama 3.2 via Ollama to process this data locally, constructing a robust knowledge base without relying on external cloud APIs.
 
 To achieve high-accuracy retrieval, Mimir performs a dual ingestion process that captures both structure and meaning. It employs an LLM to extract structured entities and relationships to build a Knowledge Graph within a Neo4j database, while simultaneously generating semantic vector embeddings using the nomic-embed-text model. This hybrid approach ensures that the system captures both the explicit structural connections between concepts and the implicit semantic nuances of the unstructured text.
 
@@ -20,7 +20,7 @@ The project is named after Mimir, the figure from Norse mythology known for his 
 
 - On-Demand Model Loading: Automatically downloads missing models via the Ollama API without restarting Docker.
 
-- Multi-Format Ingestion: Supports PDF, Word, Markdown, and Text files.
+- Multi-Format Ingestion: Supports URL, PDF, Word, Markdown, and Text files.
 
 - Modern & Clean UI: Features a minimalist interface with dedicated navigation for chatting and document management, utilizing distinct views for a clutter-free experience.
 
