@@ -19,7 +19,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 import os
 import tempfile
-from modules import database, ingestor, rag_engine, llm
+from modules import database, ingestor, rag_engine, llm, analytics
 import config
 
 # --- VISUAL CONFIGURATION ---
@@ -42,8 +42,8 @@ def main():
         with st.container():
             view = option_menu(
                 menu_title=None,
-                options=["Chat", "Ingest"],
-                icons=["chat-quote", "file-earmark-arrow-up"],
+                options=["Chat", "Ingest", "Analytics"],
+                icons=["chat-quote", "file-earmark-arrow-up", "graph-up-arrow"],
                 menu_icon="cast",
                 default_index=0,
                 styles={
@@ -163,6 +163,60 @@ def main():
                 except Exception as e:
                     status.update(label="❌ Ingestion Failed", state="error")
                     st.error(f"Error: {e}")
+
+    # 4. VIEW: ANALYTICS (NEW)
+    elif view == "Analytics":
+        st.subheader("Graph Analytics")
+        st.caption("Discover hidden patterns using Neo4j Graph Data Science algorithms.")
+
+        # Connect to DB
+        try:
+            graph = database.get_graph_db()
+
+            # A. General Stats
+            stats = analytics.get_stats(graph)
+            col1, col2 = st.columns(2)
+            col1.metric("Total Nodes", stats['nodes'])
+            col2.metric("Total Relationships", stats['edges'])
+
+            st.divider()
+
+            # B. Trigger Button
+            if st.button("Run Deep Analysis", type="primary"):
+                with st.spinner("Calculating PageRank and Communities..."):
+
+                    # 1. PageRank
+                    st.markdown("### 🏆 Top Influential Concepts (PageRank)")
+                    df_pr = analytics.run_pagerank(graph)
+
+                    if not df_pr.empty:
+                        # Bar Chart
+                        st.bar_chart(df_pr.set_index("Entity"), color="#724BFF")
+                    else:
+                        st.warning("Not enough data. Ingest more documents first.")
+
+                    st.divider()
+
+                    # 2. Communities
+                    st.markdown("### 🧩 Detected Topic Clusters (Louvain)")
+                    df_comm = analytics.run_community_detection(graph)
+
+                    if not df_comm.empty:
+                        st.dataframe(
+                            df_comm,
+                            column_config={
+                                "Community": "ID",
+                                "Members": st.column_config.NumberColumn("Size"),
+                                "Examples": "Sample Entities"
+                            },
+                            width='stretch',
+                            hide_index=True
+                        )
+                    else:
+                        st.info("No clear communities found yet.")
+
+        except Exception as e:
+            st.error(f"Analytics Error: {e}")
 
 if __name__ == "__main__":
     main()

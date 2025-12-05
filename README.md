@@ -122,16 +122,16 @@ Before getting started, ensure you have the following installed and configured o
 
 ## Usage Guide
 
-The application is organized into two main views, accessible via the sidebar navigation menu:
+The application is organized into three main views, accessible via the sidebar navigation menu:
 
 ### 1. Sidebar Control Panel
-* **Navigation:** Use the menu to switch between **"Chat"** (Interaction) and **"Ingest"** (Document Management).
+* **Navigation:** Use the menu to switch between **"Chat"** (Interaction), **"Ingest"** (Document Management), and **"Analytics"** (Knowledge Discovery).
 * **AI Brain:** Select the LLM you want to use.
     * *Status Indicators:* 🟢 indicates the model is ready; 🟠 indicates it will be downloaded on first use.
 * **Database Status:** Quickly check if Neo4j is connected and open the Graph Browser via the link.
 
 ### 2. View: Ingest
-Select **"Ingest"** in the sidebar menu to access the document processing pipeline.
+Select **"Ingest"** in the sidebar to access the document processing pipeline.
 1.  **Upload:** Drag and drop your files (`PDF`, `DOCX`, `TXT`, `MD`) into the main area.
 2.  **Settings:** Expand "Advanced Settings" if you wish to clear the database before ingestion.
 3.  **Process:** Click **"Process Document"**. Mimir will display a real-time status log showing:
@@ -143,12 +143,21 @@ Select **"Ingest"** in the sidebar menu to access the document processing pipeli
 ![ingest](screenshots/ingest.png)
 
 ### 3. View: Chat
-Select **"Chat"** in the sidebar menu to query your knowledge base.
+Select **"Chat"** in the sidebar to query your knowledge base.
 * **Ask:** Type natural language queries (e.g., *"What concepts are related to X?"*).
 * **Thinking Process:** The selected model (e.g., Llama 3.2) will analyze the query, generating Cypher queries for the graph and performing vector searches for context.
 * **Result:** The system synthesizes an answer based on the hybrid retrieval.
 
 ![chat](screenshots/chat.png)
+
+### 4. View: Analytics
+Select **"Analytics"** in the sidebar to perform Graph Data Science (GDS) tasks on your ingested data.
+* **Overview:** Instantly view the total count of Nodes (Entities) and Relationships in your Knowledge Graph.
+* **Deep Analysis:** Click **"Run Deep Analysis"** to execute advanced algorithms:
+    * **PageRank:** Visualizes the most influential and central concepts in the graph using an interactive bar chart.
+    * **Community Detection:** Identifies clusters of related topics (using the Louvain algorithm) and presents them in a structured table, helping you understand the thematic structure of the documents.
+
+![analytics](screenshots/analytics.png)
 
 ## Project Structure
 
