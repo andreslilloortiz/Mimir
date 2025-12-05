@@ -214,7 +214,7 @@ def main():
                         status.update(label="❌ Ingestion Failed", state="error")
                         st.error(f"Error: {e}")
 
-    # 4. VIEW: ANALYTICS (NEW)
+    # 4. VIEW: ANALYTICS
     elif view == "Analytics":
         st.subheader("Graph Analytics")
         st.caption("Discover hidden patterns using Neo4j Graph Data Science algorithms.")
