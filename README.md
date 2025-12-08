@@ -170,6 +170,8 @@ The codebase is organized into a modular structure to separate logic from the in
 ```text
 mimir/
 ├── mimir.py                  # Main Entry Point (Streamlit UI)
+├── architecture              # Arquitecture folder
+│   ├── mimir.mdj             # Arquitecture implemented with StarUML
 ├── config.py                 # Configuration settings
 ├── modules/                  # Backend Logic
 │   ├── database.py           # Neo4j Connection Management
@@ -182,6 +184,20 @@ mimir/
 ├── LICENSE                   # Project license
 └── README.md                 # Project documentation
 ```
+
+## System Architecture
+
+Mimir implements a **Hybrid Deployment Architecture** designed to maximize local performance while maintaining modularity. The application logic runs natively on the Host Machine to leverage Python's processing capabilities directly, while heavy infrastructure services are isolated in Docker containers.
+
+![System Architecture](screenshots/architecture.png)
+
+* **Host Layer (Client & Logic):**
+    * **User Workstation:** The entry point via a standard Web Browser interacting with the Streamlit UI.
+    * **Mimir App (Python Runtime):** The core controller running locally. It handles the `Ingestor Pipeline` (ETL), `RAG Engine`, and `Visualization Logic`. It communicates with backend services via HTTP and Bolt protocols.
+
+* **Infrastructure Layer (Dockerized Services):**
+    * **Inference Node (`mimir-ollama`):** Hosts the LLM (`llama3.2` or selected) for generation and graph extraction, and the embedding model (`nomic-embed-text`). Exposes a REST API on port `11434`.
+    * **Knowledge Node (`mimir-neo4j`):** Stores the structured Knowledge Graph and the Vector Index. Equipped with the Graph Data Science (GDS) plugin for advanced analytics. Accessible via Bolt on port `7687`.
 
 ## Developer Notes
 
