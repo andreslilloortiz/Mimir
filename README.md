@@ -114,7 +114,7 @@ Before getting started, ensure you have the following installed and configured o
 
 5.  **Shut down the Infrastructure**:
 
-    It is recommended to shut down the Neo4j and Ollama services when the job is finished. All changes will be persistent in the Docker volumes.
+    It is recommended to shut down the Neo4j and Ollama services when the job is finished. All changes will be persistent on the Docker volumes.
 
     ```bash
     docker compose down
